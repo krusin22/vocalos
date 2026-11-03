@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VOCAB_OS: 12 MINIGAMES (V8.2 FIREWALL LOOP)</title>
+    <title>VOCAB_OS: 12 MINIGAMES (V8.4 UNLIMITED LENGTH)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -70,7 +70,7 @@
         <div class="flex justify-between items-end border-b-2 border-sky-500 pb-2 mb-3 md:mb-4 uppercase shrink-0">
             <div>
                 <h1 class="text-xl md:text-3xl font-bold tracking-widest leading-none text-sky-400">VOCAB_OS</h1>
-                <p class="text-[10px] md:text-xs text-sky-700 mt-1">SYS V.8.2 // FIREWALL LOOP FIX</p>
+                <p class="text-[10px] md:text-xs text-sky-700 mt-1">SYS V.8.4 // UNLIMITED LENGTH</p>
             </div>
             <div class="text-right">
                 <div class="text-sm md:text-xl text-sky-500">SCORE: <br class="block md:hidden"><span id="ui-score" class="text-xl md:text-3xl font-bold text-white">0000</span></div>
@@ -142,8 +142,13 @@
     <!-- JAVASCRIPT GAME LOGIC                          -->
     <!-- ============================================== -->
     <script>
-        // 1. 📚 ฐานข้อมูลคำศัพท์ 
+        // 1. 📚 ฐานข้อมูลคำศัพท์ (คุณครูใส่เพิ่มได้ตรงนี้)
         const rawVocabData = `
+เอเลี่ยน,ALIEN,คำศัพท์ทั่วไป (General)
+แมว,CAT,สัตว์ (Animals)
+หมา,DOG,สัตว์ (Animals)
+สีแดง,RED,สี (Colors)
+น้ำแข็ง,ICE,อาหาร (Food)
 แมว,CAT,สัตว์ (Animals)
 หมา,DOG,สัตว์ (Animals)
 หมู,PIG,สัตว์ (Animals)
@@ -1736,7 +1741,7 @@
             document.getElementById('btn-reboot').addEventListener('click', resetGame);
         };
 
-        // 3. ระบบเสียง (ใช้ Lazy Load ป้องกัน Browser บล็อก)
+        // 3. ระบบเสียง 
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -1883,7 +1888,6 @@
                 clearInterval(mainTimer);
                 soundWin();
                 
-                // สุ่มคะแนน 20 - 100
                 let pointsEarned = Math.floor(Math.random() * (100 - 20 + 1)) + 20;
                 score += pointsEarned;
                 
@@ -1919,7 +1923,7 @@
             if (isLocked) return;
             isLocked = true;
             soundFail();
-            targetWord.textContent = currentAnswer; // เฉลยตอนหมดเวลา
+            targetWord.textContent = currentAnswer; 
             targetWord.classList.remove('text-white');
             targetWord.classList.add('danger-text');
             setTimeout(gameOver, 2000);
@@ -1967,9 +1971,9 @@
         }
 
         // ==========================================
-        // 🎮 โค้ดมินิเกมทั้ง 12 เกม
+        // 1. KEYPAD HACK (SPELL THE WORD) 
+        // ⭐️ แก้ไขให้พิมพ์คำศัพท์ความยาวไม่จำกัด
         // ==========================================
-
         function loadMinigameKeypad() {
             const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
             let correctLetters = [...new Set(currentAnswer.split(''))];
@@ -1983,14 +1987,14 @@
 
             let buttonsHtml = kbLetters.map(l => {
                 if(l === 'DEL') return '<button class="kp-btn btn-retro h-10 md:h-12 text-sm md:text-base text-red-500 font-bold rounded-md" data-val="DEL">DEL</button>';
-                if(l === 'OK') return '<button class="kp-btn btn-retro h-10 md:h-12 text-sm md:text-base text-green-500 font-bold col-span-2 rounded-md" data-val="E">OK</button>';
+                if(l === 'OK') return '<button class="kp-btn btn-retro h-10 md:h-12 text-sm md:text-base text-green-500 font-bold col-span-2 rounded-md" data-val="ENTER">OK</button>';
                 return '<button class="kp-btn btn-retro h-10 md:h-12 text-base md:text-lg font-bold rounded-md" data-val="' + l + '">' + l + '</button>';
             }).join('');
 
             mgContainer.innerHTML = `
                 <div class="flex flex-col items-center w-full max-w-[260px] md:max-w-[320px]" id="kp-container">
                     <div class="text-xs md:text-sm mb-2 text-sky-500">SPELL THE WORD</div>
-                    <div id="kp-display" class="w-full bg-slate-900 border border-sky-500 h-10 md:h-12 mb-3 flex items-center justify-center text-lg md:text-xl tracking-[0.5em] text-white pl-2 rounded-md">_</div>
+                    <div id="kp-display" class="w-full bg-slate-900 border border-sky-500 h-10 md:h-12 mb-3 flex items-center justify-center text-lg md:text-xl tracking-[0.5em] text-white pl-2 rounded-md overflow-hidden">_</div>
                     <div class="grid grid-cols-4 gap-2 w-full">
                         ${buttonsHtml}
                     </div>
@@ -2008,12 +2012,13 @@
                     if (v === 'DEL') { 
                         inputVal = inputVal.slice(0, -1); 
                     } 
-                    else if (v === 'E') {
+                    else if (v === 'ENTER') {
                         if(!evaluateAnswer(inputVal === currentAnswer, container)) {
                             inputVal = ""; 
                         }
                     } else { 
-                        if (inputVal.length < currentAnswer.length + 1) inputVal += v; 
+                        // ⭐️ เอาเงื่อนไข (inputVal.length < currentAnswer.length + 1) ออก ทำให้พิมพ์ได้ไม่จำกัด
+                        inputVal += v; 
                     }
                     display.textContent = inputVal || "_";
                 });
@@ -2337,10 +2342,9 @@
             choices.push(currentAnswer);
             choices.sort(() => Math.random() - 0.5);
 
-            // ⭐️ แก้ไขให้ใส่คำสั่ง `infinite` ให้มันวนลูปตกไปเรื่อยๆ จนกว่าเวลาหลักจะหมด
             let firewallHtml = choices.map((val, idx) => {
                 let duration = (4.0 + Math.random() * 3.5).toFixed(2);
-                let delay = (Math.random() * -3).toFixed(2); // ให้สุ่มเวลาเริ่มไม่พร้อมกัน
+                let delay = (Math.random() * -3).toFixed(2); 
                 let leftPos = (5 + (idx * 18));
                 return `
                 <button class="firewall-btn btn-retro absolute w-16 md:w-20 h-10 md:h-12 bg-slate-800 border-2 border-sky-600 text-sky-400 font-bold text-xs md:text-sm flex items-center justify-center shadow-lg rounded-md" 
@@ -2369,8 +2373,8 @@
                         e.target.classList.add('opacity-0', 'pointer-events-none');
                     } else if (isCorrect) {
                         e.target.style.animationPlayState = 'paused';
-                        e.target.classList.replace('border-sky-600', 'border-green-500');
-                        e.target.classList.replace('text-sky-400', 'text-green-500');
+                        e.target.style.backgroundColor = '#22c55e';
+                        e.target.style.color = '#000';
                     }
                 });
             });
